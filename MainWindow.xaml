@@ -1,0 +1,29 @@
+﻿<Window x:Class="CodingChallengeV2Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CodingChallengeV2Client"
+        mc:Ignorable="d"
+        Title="Coding Challenge" Height="438.99" Width="655.348" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Button x:Name="btnEncodeData" Content="Encode Data" HorizontalAlignment="Left" Margin="128,194,0,0" VerticalAlignment="Top" Width="152" Click="btnEncryptData_Click"/>
+        <Button x:Name="btnDecodeData" Content="Decode Data" HorizontalAlignment="Left" Margin="292,194,0,0" VerticalAlignment="Top" Width="152" Click="btnDecryptData_Click"/>
+        <ListBox x:Name="lstStatus" HorizontalAlignment="Left" Height="111" Margin="10,278,0,0" VerticalAlignment="Top" Width="614"/>
+        <Button x:Name="btnGenerateNewTestData" Content="Reset and generate new test data" HorizontalAlignment="Left" Margin="128,42,0,0" VerticalAlignment="Top" Width="227" Click="btnGenerateTestData_Click"/>
+        <TextBox x:Name="txtTestDataSize" HorizontalAlignment="Left" Height="23" Margin="128,14,0,0" TextWrapping="Wrap" Text="250000" VerticalAlignment="Top" Width="62"/>
+        <Label Content="Test data size:" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top"/>
+        <Label Content="(bytes)" HorizontalAlignment="Left" Margin="195,11,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtServerHostname" HorizontalAlignment="Left" Height="23" Margin="128,109,0,0" TextWrapping="Wrap" Text="codingchallenge.identityone.net" VerticalAlignment="Top" Width="379"/>
+        <TextBox x:Name="txtServerPort" HorizontalAlignment="Left" Height="23" Margin="128,137,0,0" TextWrapping="Wrap" Text="4544" VerticalAlignment="Top" Width="62"/>
+        <Label x:Name="lblHostname" Content="Hostname:" HorizontalAlignment="Left" Margin="10,105,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblPort" Content="Port:" HorizontalAlignment="Left" Margin="10,136,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblEncodeCycleCount" Content="lblEncodeCycleCount" HorizontalAlignment="Left" Margin="128,221,0,0" VerticalAlignment="Top"/>
+        <Label Content="Timeout:" HorizontalAlignment="Left" Margin="10,167,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtTimeout" HorizontalAlignment="Left" Height="23" Margin="128,166,0,0" TextWrapping="Wrap" Text="3000" VerticalAlignment="Top" Width="62"/>
+        <Label Content="(ms)" HorizontalAlignment="Left" Margin="195,163,0,0" VerticalAlignment="Top"/>
+        <Label Content="Encode/Decode:" HorizontalAlignment="Left" Margin="10,221,0,0" VerticalAlignment="Top"/>
+        <Label Content="Status:" HorizontalAlignment="Left" Margin="10,252,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.579,0.885"/>
+
+    </Grid>
+</Window>
