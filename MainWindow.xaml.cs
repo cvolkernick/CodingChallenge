@@ -22,7 +22,7 @@ namespace CodingChallengeV2Client
     /// 
     public partial class MainWindow : Window
     {
-        private string payload = "";
+        private byte[] payload;
 
         public MainWindow()
         {
@@ -32,7 +32,7 @@ namespace CodingChallengeV2Client
         
         private void btnGenerateTestData_Click(object sender, RoutedEventArgs e)
         {
-            payload = "tester";            
+            payload = Encoding.ASCII.GetBytes("tester");
         }
 
         private void btnEncryptData_Click(object sender, RoutedEventArgs e)
@@ -78,27 +78,27 @@ namespace CodingChallengeV2Client
 
                 // Receive the response
                 ProtocolResponse response = ProtocolResponse.Receive(stream);
+                payload = response.payload;
 
 
+                //requestByteArray = new Byte[7];
 
-                requestByteArray = new Byte[7];
+                //int length = requestByteArray[3] + requestByteArray[4] + requestByteArray[5];
 
-                int length = requestByteArray[3] + requestByteArray[4] + requestByteArray[5];
+                //requestByteArray = new Byte[length];
 
-                requestByteArray = new Byte[length];
+                //String responseData = String.Empty;
 
-                String responseData = String.Empty;
+                //Int32 bytes = stream.Read(requestByteArray, 0, requestByteArray.Length);
 
-                Int32 bytes = stream.Read(requestByteArray, 0, requestByteArray.Length);
+                //for (int i = 0; i < requestByteArray.Length; i++)
+                //{
+                //    Console.WriteLine(requestByteArray[i]);
+                //}
 
-                for (int i = 0; i < requestByteArray.Length; i++)
-                {
-                    Console.WriteLine(requestByteArray[i]);
-                }
-
-                Console.WriteLine(bytes);
-                responseData = System.Text.Encoding.ASCII.GetString(requestByteArray, 0, bytes);
-                Console.WriteLine("Received: {0}", responseData);
+                //Console.WriteLine(bytes);
+                //responseData = System.Text.Encoding.ASCII.GetString(requestByteArray, 0, bytes);
+                //Console.WriteLine("Received: {0}", responseData);
 
                 stream.Close();
                 client.Close();

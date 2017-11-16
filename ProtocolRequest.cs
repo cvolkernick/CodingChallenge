@@ -10,11 +10,11 @@ namespace CodingChallengeV2Client
     {
         string header = "";
         int length = 0;
-        string payload = "";
+        byte[] payload;
         Operation operation = Operation.Encode;
         byte checksum = 0;
 
-        public ProtocolRequest(string payload, Operation operation)
+        public ProtocolRequest(byte[] payload, Operation operation)
         {            
             this.payload = payload;
             this.operation = operation;
@@ -43,9 +43,8 @@ namespace CodingChallengeV2Client
 
             // version
             packet.Add(1);
-                        
-            var data = Encoding.ASCII.GetBytes(this.payload);
-            length = 9 + data.Length;
+            
+            length = 9 + payload.Length;
 
             // length
             packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
@@ -54,7 +53,7 @@ namespace CodingChallengeV2Client
             packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
 
             // data
-            packet.AddRange(data);
+            packet.AddRange(payload);
 
             // checksum
             checksum = GetCheckSum(packet);

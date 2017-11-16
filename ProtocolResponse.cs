@@ -12,11 +12,11 @@ namespace CodingChallengeV2Client
         string header = "";
         int status = 0;
         int length = 0;
-        string payload = "";
+        public byte[] payload;
         byte checksum = 0;
         //Operation operation = Operation.Encode;
 
-        public ProtocolResponse(string header, int status, int length, string payload, byte checksum)
+        public ProtocolResponse(string header, int status, int length, byte[] payload, byte checksum)
         {
             this.header = header;
             this.status = status;
@@ -46,7 +46,7 @@ namespace CodingChallengeV2Client
             Buffer.BlockCopy(bytes, 0, payloadBytes, 0, bytes.Length - 1);
             //byte checksum = GetCheckSum(ToByteArray().ToList());
             //var payloadBytes = bytes.ToList()..subArray(bytes.Length - 1);
-            var payload = Encoding.Default.GetString(payloadBytes);
+            var payload = payloadBytes;
             var checksum = bytes[bytes.Length - 1];
 
             ProtocolResponse response = new ProtocolResponse(header, status, length, payload, checksum);
@@ -58,17 +58,20 @@ namespace CodingChallengeV2Client
             //error
             //}
 
-            return null; 
-                //response;
+            return response;
         }
 
         public override string ToString()
         {
-            return "Header: " + header + "\n"
+            string output = "Header: " + header + "\n"
                 + "Status: " + status + "\n"
                 + "Length: " + length + "\n"
                 + "Data: " + payload + "\n"
                 + "Checksum: " + checksum;
+
+            //output = output.Replace(@"\", @"-");
+
+            return output;
         }
 
         public byte[] ToByteArray()
@@ -78,7 +81,7 @@ namespace CodingChallengeV2Client
             header = headerBytes[0].ToString() + " " + headerBytes[1].ToString();
             packet.AddRange(BitConverter.GetBytes((UInt16)0x1092));
             packet.Add(1);
-            var data = Encoding.ASCII.GetBytes(this.payload);
+            var data = payload;
             length = 9 + data.Length;
             packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
             //packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
