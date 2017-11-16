@@ -14,43 +14,52 @@ namespace CodingChallengeV2Client
         int length = 0;
         string payload = "";
         byte checksum = 0;
-        Operation operation = Operation.Encode;
+        //Operation operation = Operation.Encode;
 
-        public ProtocolResponse(string header, int status, int length, string payload, byte checksum, Operation operation)
+        public ProtocolResponse(string header, int status, int length, string payload, byte checksum)
         {
             this.header = header;
             this.status = status;
             this.length = length;
             this.payload = payload;
             this.checksum = checksum;
-            this.operation = operation;
         }
 
         public static ProtocolResponse Receive(NetworkStream stream)
         {
+            // Get only the response headers (without payload & checksum)
             byte[] headers = new byte[7];
             stream.Read(headers, 0, headers.Length);            
 
             string header = headers[0] + " " + headers[1];
             int status = headers[2];
+
+            // Get little endian length value
             var length = headers[3] + 16 * headers[4] + 256 * headers[5] + 4096 * headers[6];
-            
+
+            // Get the payload & checksum bytes
             byte[] bytes = new byte[length - 7];
 
-            stream.Read(bytes, 0, length);
+            stream.Read(bytes, 0, length - 7);
 
-            byte checksum = GetCheckSum(ToByteArray().ToList());
-            //var payloadBytes = bytes.subArray(n - 1 ???)
-            //var payload = ??? bytesToAscii(payloadBytes) ???
+            var payloadBytes = new byte[bytes.Length - 1];
+            Buffer.BlockCopy(bytes, 0, payloadBytes, 0, bytes.Length - 1);
+            //byte checksum = GetCheckSum(ToByteArray().ToList());
+            //var payloadBytes = bytes.ToList()..subArray(bytes.Length - 1);
+            var payload = Encoding.Default.GetString(payloadBytes);
+            var checksum = bytes[bytes.Length - 1];
 
             ProtocolResponse response = new ProtocolResponse(header, status, length, payload, checksum);
+            Console.WriteLine(response.ToString());
+            //response.ToUnverifiedBytes
 
-            if (GetCheckSum(ToByteArray().ToList()) != checksum)
-            {
-                //error
-            }
+            //if (GetCheckSum(ToByteArray().ToList()) != checksum)
+            //{
+            //error
+            //}
 
-            return response;
+            return null; 
+                //response;
         }
 
         public override string ToString()
@@ -60,21 +69,6 @@ namespace CodingChallengeV2Client
                 + "Length: " + length + "\n"
                 + "Data: " + payload + "\n"
                 + "Checksum: " + checksum;
-        }
-
-        public byte GetCheckSum(List<byte> bytes)
-        {
-            byte cs = 0;
-
-            for (var i = 0; i < bytes.Count; i++)
-            {
-                if (((1 << (i % 8)) & bytes[i]) > 0)
-                {
-                    cs++;
-                }
-            }
-
-            return cs;
         }
 
         public byte[] ToByteArray()
@@ -87,7 +81,7 @@ namespace CodingChallengeV2Client
             var data = Encoding.ASCII.GetBytes(this.payload);
             length = 9 + data.Length;
             packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
-            packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
+            //packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
             packet.AddRange(data);
             checksum = GetCheckSum(packet);
             packet.Add(checksum);

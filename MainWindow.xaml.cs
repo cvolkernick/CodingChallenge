@@ -50,7 +50,7 @@ namespace CodingChallengeV2Client
             ProtocolRequest request = new ProtocolRequest(payload, operation);
 
             byte[] requestByteArray = request.ToVerifiedBytes().ToArray();
-
+            
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~");
             Console.WriteLine("REQUEST");
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~");

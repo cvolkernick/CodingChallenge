@@ -31,20 +31,34 @@ namespace CodingChallengeV2Client
                 
         }
 
+        // Form the request
         protected override List<byte> ToUnverifiedBytes()
         {
             var packet = new List<byte>();
+
+            // header
             byte[] headerBytes = BitConverter.GetBytes((UInt16)0x1092);
             header = headerBytes[0].ToString() + " " + headerBytes[1].ToString();
-            packet.AddRange(BitConverter.GetBytes((UInt16)0x1092));
+            packet.AddRange(headerBytes);
+
+            // version
             packet.Add(1);
+                        
             var data = Encoding.ASCII.GetBytes(this.payload);
             length = 9 + data.Length;
+
+            // length
             packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
+
+            // operation
             packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
+
+            // data
             packet.AddRange(data);
+
+            // checksum
             checksum = GetCheckSum(packet);
-            packet.Add(checksum);
+            //packet.Add(checksum);
 
             return packet;
         }
