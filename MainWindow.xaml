@@ -18,7 +18,7 @@
         <TextBox x:Name="txtServerPort" HorizontalAlignment="Left" Height="23" Margin="128,137,0,0" TextWrapping="Wrap" Text="4544" VerticalAlignment="Top" Width="62"/>
         <Label x:Name="lblHostname" Content="Hostname:" HorizontalAlignment="Left" Margin="10,105,0,0" VerticalAlignment="Top"/>
         <Label x:Name="lblPort" Content="Port:" HorizontalAlignment="Left" Margin="10,136,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="lblEncodeCycleCount" Content="lblEncodeCycleCount" HorizontalAlignment="Left" Margin="128,221,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblEncodeCycleCount" Content="0 (Cyle Count)" HorizontalAlignment="Left" Margin="128,221,0,0" VerticalAlignment="Top"/>
         <Label Content="Timeout:" HorizontalAlignment="Left" Margin="10,167,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="txtTimeout" HorizontalAlignment="Left" Height="23" Margin="128,166,0,0" TextWrapping="Wrap" Text="3000" VerticalAlignment="Top" Width="62"/>
         <Label Content="(ms)" HorizontalAlignment="Left" Margin="195,163,0,0" VerticalAlignment="Top"/>

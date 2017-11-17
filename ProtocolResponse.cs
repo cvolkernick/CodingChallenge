@@ -10,16 +10,22 @@ namespace CodingChallengeV2Client
     class ProtocolResponse : ProtocolMessage
     {
         string header = "";
-        public int status = 0;
+        public int _status;
+
+        public int Status
+        {
+            get { return _status;  }
+            private set { _status = value; }
+        }
+
         int length = 0;
         public byte[] payload;
         byte checksum = 0;
-        //Operation operation = Operation.Encode;
 
         public ProtocolResponse(string header, int status, int length, byte[] payload, byte checksum)
         {
             this.header = header;
-            this.status = status;
+            Status = status;
             this.length = length;
             this.payload = payload;
             this.checksum = checksum;
@@ -44,21 +50,11 @@ namespace CodingChallengeV2Client
 
             var payloadBytes = new byte[bytes.Length - 1];
             Buffer.BlockCopy(bytes, 0, payloadBytes, 0, bytes.Length - 1);
-            //byte checksum = GetCheckSum(ToByteArray().ToList());
-            //var payloadBytes = bytes.ToList()..subArray(bytes.Length - 1);
             var payload = payloadBytes;
             var checksum = bytes[bytes.Length - 1];
 
             ProtocolResponse response = new ProtocolResponse(header, status, length, payload, checksum);
             Console.WriteLine(response.ToString());
-            //response.ToUnverifiedBytes
-
-            // TODO: Check response checksum against locally calculated checksum for congruency
-
-            if (GetCheckSum(response.ToUnverifiedBytes()) != checksum)
-            {
-                throw new Exception { };
-            }
 
             return response;
         }
@@ -69,27 +65,18 @@ namespace CodingChallengeV2Client
                 + "RESPONSE" + "\n"
                 + "~~~~~~~~~~~~~~~~~~~~" + "\n"
                 + "Header: " + header + "\n"
-                + "Status: " + status + "\n"
+                + "Status: " + Status + "\n"
                 + "Length: " + length + "\n"
                 + "Data: " + Encoding.ASCII.GetString(payload) + "\n"
                 + "Checksum: " + checksum;
         }
 
-        //public byte[] ToByteArray()
-        //{
-        //    List<byte> byteArray = ToUnverifiedBytes();
-
-        //    return byteArray.ToArray();
-        //}
-
         protected override List<byte> ToUnverifiedBytes()
         {
             var packet = new List<byte>();
-            //byte[] headerBytes = BitConverter.GetBytes((UInt16)0x0978);
-            //header = headerBytes[0].ToString() + " " + headerBytes[1].ToString();
             
             packet.AddRange(BitConverter.GetBytes((UInt16)0x0978));
-            packet.Add(Convert.ToByte(status));
+            packet.Add(Convert.ToByte(Status));
 
             var data = payload;
             length = 9 + data.Length;

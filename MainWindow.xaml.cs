@@ -15,31 +15,29 @@ namespace CodingChallengeV2Client
     public partial class MainWindow : Window
     {
         private byte[] payload;
+        private int cycleCount = 0;
 
         public MainWindow()
         {
             InitializeComponent();
             btnGenerateTestData_Click(this, null);
+            
         }
         
         private void btnGenerateTestData_Click(object sender, RoutedEventArgs e)
         {
-            //byte[] randomBytes = new byte[Convert.ToInt32(txtTestDataSize.Text)];
-            //Random rnd = new Random();
-            //rnd.NextBytes(randomBytes);
-
-            //payload = randomBytes;
-
             payload = Encoding.ASCII.GetBytes("tester");
         }
 
         private void btnEncryptData_Click(object sender, RoutedEventArgs e)
         {
+            lstStatus.Items.Add(GetStatusInfo("Information", "Requesting to Encode " + txtTestDataSize.Text + " byte(s) of data."));
             ProcessRequest(Operation.Encode);
         }
 
         private void btnDecryptData_Click(object sender, RoutedEventArgs e)
         {
+            lstStatus.Items.Add(GetStatusInfo("Information", "Requesting to Decode " + txtTestDataSize.Text + " byte(s) of data."));
             ProcessRequest(Operation.Decode);
         }
 
@@ -65,6 +63,59 @@ namespace CodingChallengeV2Client
                 ProtocolResponse response = ProtocolResponse.Receive(stream);
                 payload = response.payload;
 
+                switch (response.Status)
+                {
+                    case 0:
+                        if (operation == Operation.Encode)
+                        {
+                            cycleCount++;
+                        }
+                        else if (operation == Operation.Decode)
+                        {
+                            if (cycleCount > 0)
+                            {
+                                cycleCount--;
+                            }
+                        }
+                        else
+                        {
+                            lstStatus.Items.Add(GetStatusInfo("Error", "Unknown operation"));
+                        }
+                        break;
+                    case 1:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Invalid header was received"));
+                        break;
+                    case 2:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Unsupported protocol version was received"));
+                        break;
+                    case 3:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Unsupported protocol operation was received"));
+                        break;
+                    case 4:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Timed out waiting for more data / Incomplete data length received"));
+                        break;
+                    case 5:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Maximum request length has been exceeded"));
+                        break;
+                    case 6:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Invalid checksum was received"));
+                        break;
+                    case 7:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Encode operation failed"));
+                        break;
+                    case 8:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Decode operation failed"));
+                        break;
+                    case 9:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Maximum response length after operation exceeds maximum allowed response length"));
+                        break;
+                    default:
+                        lstStatus.Items.Add(GetStatusInfo("Error", "Unknown Error (Response)"));
+                        break;
+                }               
+
+                lblEncodeCycleCount.Content = cycleCount + " (Cycle Count)";
+
                 stream.Close();
                 client.Close();
             }
@@ -76,6 +127,11 @@ namespace CodingChallengeV2Client
             {
                 Console.WriteLine("SocketException: {0}", exception);
             }
-        }      
+        }
+        
+        public static string GetStatusInfo(string type, string message)
+        {
+            return DateTime.Now + "\t" + type + "\t" + message;
+        }   
     }
 }
