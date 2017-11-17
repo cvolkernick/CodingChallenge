@@ -5,14 +5,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace CodingChallengeV2Client
 {
@@ -32,6 +24,12 @@ namespace CodingChallengeV2Client
         
         private void btnGenerateTestData_Click(object sender, RoutedEventArgs e)
         {
+            //byte[] randomBytes = new byte[Convert.ToInt32(txtTestDataSize.Text)];
+            //Random rnd = new Random();
+            //rnd.NextBytes(randomBytes);
+
+            //payload = randomBytes;
+
             payload = Encoding.ASCII.GetBytes("tester");
         }
 
@@ -51,19 +49,7 @@ namespace CodingChallengeV2Client
 
             byte[] requestByteArray = request.ToVerifiedBytes().ToArray();
             
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~");
-            Console.WriteLine("REQUEST");
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~");
             Console.WriteLine(request.ToString());
-
-            //for (int i = 0; i < requestByteArray.Length; i++)
-            //{
-            //    Console.WriteLine(requestByteArray[i]);
-            //}
-
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~");
-            Console.WriteLine("RESPONSE");
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~");
 
             try
             {
@@ -74,31 +60,10 @@ namespace CodingChallengeV2Client
                 // Open the network stream and send the request
                 NetworkStream stream = client.GetStream();
                 stream.Write(requestByteArray, 0, requestByteArray.Length);
-                Console.WriteLine("Sent: {0}", payload);
 
                 // Receive the response
                 ProtocolResponse response = ProtocolResponse.Receive(stream);
                 payload = response.payload;
-
-
-                //requestByteArray = new Byte[7];
-
-                //int length = requestByteArray[3] + requestByteArray[4] + requestByteArray[5];
-
-                //requestByteArray = new Byte[length];
-
-                //String responseData = String.Empty;
-
-                //Int32 bytes = stream.Read(requestByteArray, 0, requestByteArray.Length);
-
-                //for (int i = 0; i < requestByteArray.Length; i++)
-                //{
-                //    Console.WriteLine(requestByteArray[i]);
-                //}
-
-                //Console.WriteLine(bytes);
-                //responseData = System.Text.Encoding.ASCII.GetString(requestByteArray, 0, bytes);
-                //Console.WriteLine("Received: {0}", responseData);
 
                 stream.Close();
                 client.Close();
@@ -111,29 +76,6 @@ namespace CodingChallengeV2Client
             {
                 Console.WriteLine("SocketException: {0}", exception);
             }
-        }
-
-        //private byte[] CreatePacket(string s, Operation op)
-        //{
-        //    var packet = new List<byte>();
-        //    packet.AddRange(BitConverter.GetBytes((UInt16)0x1092));
-        //    packet.Add(1);
-        //    var data = Encoding.ASCII.GetBytes(s);
-        //    packet.AddRange(BitConverter.GetBytes((UInt32)(9 + data.Length)));
-        //    packet.Add((byte)(op == Operation.Encode ? 1 : 2));
-        //    packet.AddRange(data);
-        //    packet.Add(CheckSum(packet));
-        //    return packet.ToArray();
-        //}
-
-        //private byte[] Encode()
-        //{
-        //    return new byte[1];
-        //}
-
-        //private byte[] Decode()
-        //{
-        //    return new byte[1];
-        //}        
+        }      
     }
 }

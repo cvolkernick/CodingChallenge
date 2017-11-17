@@ -22,13 +22,15 @@ namespace CodingChallengeV2Client
 
         public override string ToString()
         {
-            return "Header: " + header + "\n"
+            return "~~~~~~~~~~~~~~~~~~~~" + "\n"
+                + "REQUEST" + "\n"
+                + "~~~~~~~~~~~~~~~~~~~~" + "\n"
+                + "Header: " + header + "\n"
                 + "Version: 1" + "\n"
                 + "Length: " + length + "\n"
                 + "Operation: " + operation + "\n"
-                + "Data: " + payload + "\n"
-                + "Checksum: " + checksum;
-                
+                + "Data: " + Encoding.ASCII.GetString(payload) + "\n"
+                + "Checksum: " + checksum;                
         }
 
         // Form the request

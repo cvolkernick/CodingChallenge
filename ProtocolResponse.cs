@@ -10,7 +10,7 @@ namespace CodingChallengeV2Client
     class ProtocolResponse : ProtocolMessage
     {
         string header = "";
-        int status = 0;
+        public int status = 0;
         int length = 0;
         public byte[] payload;
         byte checksum = 0;
@@ -53,48 +53,50 @@ namespace CodingChallengeV2Client
             Console.WriteLine(response.ToString());
             //response.ToUnverifiedBytes
 
-            //if (GetCheckSum(ToByteArray().ToList()) != checksum)
-            //{
-            //error
-            //}
+            // TODO: Check response checksum against locally calculated checksum for congruency
+
+            if (GetCheckSum(response.ToUnverifiedBytes()) != checksum)
+            {
+                throw new Exception { };
+            }
 
             return response;
         }
 
         public override string ToString()
         {
-            string output = "Header: " + header + "\n"
+            return "~~~~~~~~~~~~~~~~~~~~" + "\n"
+                + "RESPONSE" + "\n"
+                + "~~~~~~~~~~~~~~~~~~~~" + "\n"
+                + "Header: " + header + "\n"
                 + "Status: " + status + "\n"
                 + "Length: " + length + "\n"
-                + "Data: " + payload + "\n"
+                + "Data: " + Encoding.ASCII.GetString(payload) + "\n"
                 + "Checksum: " + checksum;
-
-            //output = output.Replace(@"\", @"-");
-
-            return output;
         }
 
-        public byte[] ToByteArray()
-        {
-            var packet = new List<byte>();
-            byte[] headerBytes = BitConverter.GetBytes((UInt16)0x1092);
-            header = headerBytes[0].ToString() + " " + headerBytes[1].ToString();
-            packet.AddRange(BitConverter.GetBytes((UInt16)0x1092));
-            packet.Add(1);
-            var data = payload;
-            length = 9 + data.Length;
-            packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
-            //packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
-            packet.AddRange(data);
-            checksum = GetCheckSum(packet);
-            packet.Add(checksum);
+        //public byte[] ToByteArray()
+        //{
+        //    List<byte> byteArray = ToUnverifiedBytes();
 
-            return packet.ToArray();
-        }
+        //    return byteArray.ToArray();
+        //}
 
         protected override List<byte> ToUnverifiedBytes()
         {
-            throw new NotImplementedException();
+            var packet = new List<byte>();
+            //byte[] headerBytes = BitConverter.GetBytes((UInt16)0x0978);
+            //header = headerBytes[0].ToString() + " " + headerBytes[1].ToString();
+            
+            packet.AddRange(BitConverter.GetBytes((UInt16)0x0978));
+            packet.Add(Convert.ToByte(status));
+
+            var data = payload;
+            length = 9 + data.Length;
+            packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
+            packet.AddRange(data);
+
+            return packet;
         }
     }
 }
