@@ -11,7 +11,7 @@
         <Button x:Name="btnDecodeData" Content="Decode Data" HorizontalAlignment="Left" Margin="292,194,0,0" VerticalAlignment="Top" Width="152" Click="btnDecryptData_Click"/>
         <ListBox x:Name="lstStatus" HorizontalAlignment="Left" Height="111" Margin="10,278,0,0" VerticalAlignment="Top" Width="614"/>
         <Button x:Name="btnGenerateNewTestData" Content="Reset and generate new test data" HorizontalAlignment="Left" Margin="128,42,0,0" VerticalAlignment="Top" Width="227" Click="btnGenerateTestData_Click"/>
-        <TextBox x:Name="txtTestDataSize" HorizontalAlignment="Left" Height="23" Margin="128,14,0,0" TextWrapping="Wrap" Text="250000" VerticalAlignment="Top" Width="62"/>
+        <TextBox x:Name="txtTestDataSize" HorizontalAlignment="Left" Height="23" Margin="128,14,0,0" TextWrapping="Wrap" Text="25" VerticalAlignment="Top" Width="62"/>
         <Label Content="Test data size:" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top"/>
         <Label Content="(bytes)" HorizontalAlignment="Left" Margin="195,11,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="txtServerHostname" HorizontalAlignment="Left" Height="23" Margin="128,109,0,0" TextWrapping="Wrap" Text="codingchallenge.identityone.net" VerticalAlignment="Top" Width="379"/>

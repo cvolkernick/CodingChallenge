@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace CodingChallengeV2Client
 {
@@ -20,18 +16,18 @@ namespace CodingChallengeV2Client
         // Get message bytes with verified checksum
         public List<byte> ToVerifiedBytes()
         {
-            var byteArray = ToUnverifiedBytes();
-            var checksum = GetCheckSum(byteArray);
-            byteArray.Add(checksum);
+            List<byte> bytes = ToUnverifiedBytes();
+            byte checksum = GetCheckSum(bytes);
+            bytes.Add(checksum);
 
-            return byteArray;
+            return bytes;
         }       
 
         // Get checksum for the passed bytes
         public static byte GetCheckSum(List<byte> bytes)
         {
             byte cs = 0;
-            var i = 0;
+            int i = 0;
 
             foreach (byte b in bytes)
             {
@@ -47,9 +43,12 @@ namespace CodingChallengeV2Client
         }
     }
 
+    // Enumeration representing various operation commands
     public enum Operation
     {
         Encode,
-        Decode
+        Decode,
+        Update,
+        Clear
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CodingChallengeV2Client
 {
@@ -18,25 +16,12 @@ namespace CodingChallengeV2Client
         {            
             this.payload = payload;
             this.operation = operation;
-        }
-
-        public override string ToString()
-        {
-            return "~~~~~~~~~~~~~~~~~~~~" + "\n"
-                + "REQUEST" + "\n"
-                + "~~~~~~~~~~~~~~~~~~~~" + "\n"
-                + "Header: " + header + "\n"
-                + "Version: 1" + "\n"
-                + "Length: " + length + "\n"
-                + "Operation: " + operation + "\n"
-                + "Data: " + Encoding.ASCII.GetString(payload) + "\n"
-                + "Checksum: " + checksum;                
-        }
+        }        
 
         // Get this request's unverified (no checksum) bytes
         protected override List<byte> ToUnverifiedBytes()
         {
-            var bytes = new List<byte>();
+            List<byte> bytes = new List<byte>();
 
             // header
             byte[] headerBytes = BitConverter.GetBytes((UInt16)0x1092);
@@ -49,7 +34,7 @@ namespace CodingChallengeV2Client
             length = 9 + payload.Length;
 
             // length
-            bytes.AddRange(BitConverter.GetBytes((UInt32)(length)));
+            bytes.AddRange(BitConverter.GetBytes((uint)(length)));
 
             // operation
             bytes.Add((byte)(operation == Operation.Encode ? 1 : 2));
@@ -57,7 +42,24 @@ namespace CodingChallengeV2Client
             // data
             bytes.AddRange(payload);
 
+            // set checksum but don't include
+            checksum = GetCheckSum(bytes);
+
             return bytes;
+        }
+
+        // Get string representation of this request object
+        public override string ToString()
+        {
+            return "~~~~~~~~~~~~~~~~~~~~" + "\n"
+                + "REQUEST" + "\n"
+                + "~~~~~~~~~~~~~~~~~~~~" + "\n"
+                + "Header: " + header + "\n"
+                + "Version: 1" + "\n"
+                + "Length: " + length + "\n"
+                + "Operation: " + operation + "\n"
+                + "Data: " + Encoding.ASCII.GetString(payload) + "\n"
+                + "Checksum: " + checksum;
         }
     }    
 }

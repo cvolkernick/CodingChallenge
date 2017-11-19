@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -15,8 +11,9 @@ namespace CodingChallengeV2Client
     /// 
     public partial class MainWindow : Window
     {
-        private byte[] payload;
+        private byte[] currentData;
         private int cycleCount = 0;
+        private int currentByteCount = 0;
 
         public MainWindow()
         {
@@ -24,63 +21,81 @@ namespace CodingChallengeV2Client
             btnGenerateTestData_Click(this, null);            
         }
         
+        // Reset button click
         private void btnGenerateTestData_Click(object sender, RoutedEventArgs e)
-        {
-            payload = Encoding.ASCII.GetBytes("tester");
+        {            
+            // Generate random bytes test data
+            currentByteCount = int.Parse(txtTestDataSize.Text);            
+            currentData = GenerateRandomBytes(currentByteCount);
+            
+            // Reset application state
+            ResetCycleCount();
+            UpdateStatusList(Operation.Clear);
         }
 
+        // Encode button click
         private async void btnEncryptData_Click(object sender, RoutedEventArgs e)
         {
-            var result = await ExecuteOperation(Operation.Encode);       
+            // Try to execute the encrypt operation
+            try
+            {
+                int result = await ExecuteOperation(Operation.Encode);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.ToString());
+
+                UpdateStatusList(Operation.Update, GetStatusMessage("App Error", exception.ToString()));
+            }           
         }
 
+        // Decode button click
         private async void btnDecryptData_Click(object sender, RoutedEventArgs e)
         {
-            var result = await ExecuteOperation(Operation.Decode);
+            // Try to execute the decrypt operation
+            try
+            {
+                int result = await ExecuteOperation(Operation.Decode);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.ToString());
+
+                UpdateStatusList(Operation.Update, GetStatusMessage("App Error", exception.ToString()));
+            }            
         }
 
+        // Execute the specified type of operation
         private async Task<int> ExecuteOperation (Operation operation)
         {
             // Disable the UI
             this.IsEnabled = false;
 
             // Report the attempt status
-            lstStatus.Items.Add(GetStatusMessage("Information", "Requesting to " + operation.ToString() + txtTestDataSize.Text + " byte(s) of data."));
+            UpdateStatusList(Operation.Update, GetStatusMessage("Information", "Requesting to " + operation.ToString() + " " + currentByteCount + " byte(s) of data."));
             
             // Process the request
-            var result = await ProcessRequest(operation, Int32.Parse(txtTimeout.Text));
+            int result = await ProcessRequest(operation, int.Parse(txtTimeout.Text));
 
             // Report the result status
-            lstStatus.Items.Add(GetReportStatus(result, operation));
+            UpdateStatusList(Operation.Update, GetReportStatus(result, operation));
 
             // Re-enable the UI
             this.IsEnabled = true;
 
-            if (result == 0)
-            {
-                if (operation == Operation.Encode)
-                {
-                    cycleCount++;
-                }
-                else if (operation == Operation.Decode)
-                {
-                    if (cycleCount > 0)
-                    {
-                        cycleCount--;
-                    }
-                }
-            }
+            UpdateCycleCount(result, operation);            
 
             return result;
         }
 
+        // Send a request and receive a response
         private async Task<int> ProcessRequest(Operation operation, int timeout)
         {
             await Task.Delay(timeout);
             int result = 0;
 
             // Create a new request
-            ProtocolRequest request = new ProtocolRequest(payload, operation);
+            ProtocolRequest request = new ProtocolRequest(currentData, operation);
 
             // Get verified (calculated checksum) request bytes
             byte[] requestByteArray = request.ToVerifiedBytes().ToArray();
@@ -101,7 +116,7 @@ namespace CodingChallengeV2Client
                 ProtocolResponse response = ProtocolResponse.Receive(stream);
 
                 // Update the current payload & response status
-                payload = response.payload;
+                currentData = response.data;
                 result = response.Status;
 
                 // Close the stream and TCP client
@@ -110,16 +125,27 @@ namespace CodingChallengeV2Client
             }
             catch (ArgumentNullException exception)
             {
-                Console.WriteLine("ArgumentNullException: {0}", exception);
+                Console.WriteLine("ArgumentNullException: {0}", exception.ToString());
+
+                UpdateStatusList(Operation.Update, GetStatusMessage("Error", "ArgumentNullException: " + exception.ToString()));
             }
             catch (SocketException exception)
             {
                 Console.WriteLine("SocketException: {0}", exception);
+
+                UpdateStatusList(Operation.Update, GetStatusMessage("Error", "SocketException: " + exception.ToString()));
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("General Exception: {0}", exception);
+
+                UpdateStatusList(Operation.Update, GetStatusMessage("Error", "App error - see output for additional detail."));
             }
             
             return result;
         }
 
+        // Get the appropriate status message from the passed status code and operation
         private string GetReportStatus(int status, Operation operation)
         {
             string resultMessage = "";
@@ -164,18 +190,70 @@ namespace CodingChallengeV2Client
                     resultMessage = GetStatusMessage("Error", "Maximum response length after operation exceeds maximum allowed response length");
                     break;
                 default:
-                    resultMessage = GetStatusMessage("Error", "Unknown Error (Response)");
+                    resultMessage = GetStatusMessage("Error", "Unknown response error");
                     break;
-            }
-
-            lblEncodeCycleCount.Content = cycleCount + " (Cycle Count)";
+            }           
 
             return resultMessage;
         }
 
+        // Format a status message based on the message 
         private string GetStatusMessage(string type, string message)
         {
             return DateTime.Now + "\t" + type + "\t" + message;
+        }
+
+        // Update the cycle count and cycle count label
+        private void UpdateCycleCount(int result, Operation operation)
+        {
+            
+            if (result == 0)
+            {
+                if (operation == Operation.Encode)
+                {
+                    cycleCount++;
+                }
+                else if (operation == Operation.Decode)
+                {
+                    if (cycleCount > 0)
+                    {
+                        cycleCount--;
+                    }
+                }
+            }            
+
+            lblEncodeCycleCount.Content = cycleCount + " (Cycle Count)";
+        }
+
+        // Reset the cycle count and cycle count label to zero
+        private void ResetCycleCount()
+        {
+            cycleCount = 0;
+
+            lblEncodeCycleCount.Content = cycleCount + " (Cycle Count)";
+        }
+
+        // Update or clear content of the status list box
+        private void UpdateStatusList(Operation operation, string content = "")
+        {
+            if (operation == Operation.Update)
+            {
+                lstStatus.Items.Add(content);
+            }
+            else if (operation == Operation.Clear)
+            {
+                lstStatus.Items.Clear();
+            }            
+        }
+
+        // Generate randomized byte array of the specified size
+        private byte[] GenerateRandomBytes(int size)
+        {
+            Random random = new Random();
+            byte[] bytes = new byte[size];
+            random.NextBytes(bytes);
+
+            return bytes;
         }
     }
 }
