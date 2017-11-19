@@ -21,8 +21,7 @@ namespace CodingChallengeV2Client
         public MainWindow()
         {
             InitializeComponent();
-            btnGenerateTestData_Click(this, null);
-            
+            btnGenerateTestData_Click(this, null);            
         }
         
         private void btnGenerateTestData_Click(object sender, RoutedEventArgs e)
@@ -30,51 +29,84 @@ namespace CodingChallengeV2Client
             payload = Encoding.ASCII.GetBytes("tester");
         }
 
-        private void btnEncryptData_Click(object sender, RoutedEventArgs e)
+        private async void btnEncryptData_Click(object sender, RoutedEventArgs e)
         {
-            lstStatus.Items.Add(DateTime.Now + "\t" + "Information" + "\t" + "Requesting to Encode " + txtTestDataSize.Text + " byte(s) of data.");
-            ProcessRequest(Operation.Encode);            
+            var result = await ExecuteOperation(Operation.Encode);       
         }
 
-        private void btnDecryptData_Click(object sender, RoutedEventArgs e)
+        private async void btnDecryptData_Click(object sender, RoutedEventArgs e)
         {
-            lstStatus.Items.Add(DateTime.Now + "\t" + "Information" + "\t" + "Requesting to Decode " + txtTestDataSize.Text + " byte(s) of data.");
-            ProcessRequest(Operation.Decode);
+            var result = await ExecuteOperation(Operation.Decode);
         }
 
-        private void ProcessRequest(Operation operation)
+        private async Task<int> ExecuteOperation (Operation operation)
         {
+            // Disable the UI
+            this.IsEnabled = false;
+
+            // Report the attempt status
+            lstStatus.Items.Add(GetStatusMessage("Information", "Requesting to " + operation.ToString() + txtTestDataSize.Text + " byte(s) of data."));
+            
+            // Process the request
+            var result = await ProcessRequest(operation, Int32.Parse(txtTimeout.Text));
+
+            // Report the result status
+            lstStatus.Items.Add(GetReportStatus(result, operation));
+
+            // Re-enable the UI
+            this.IsEnabled = true;
+
+            if (result == 0)
+            {
+                if (operation == Operation.Encode)
+                {
+                    cycleCount++;
+                }
+                else if (operation == Operation.Decode)
+                {
+                    if (cycleCount > 0)
+                    {
+                        cycleCount--;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<int> ProcessRequest(Operation operation, int timeout)
+        {
+            await Task.Delay(timeout);
+            int result = 0;
+
+            // Create a new request
             ProtocolRequest request = new ProtocolRequest(payload, operation);
 
+            // Get verified (calculated checksum) request bytes
             byte[] requestByteArray = request.ToVerifiedBytes().ToArray();
             
             Console.WriteLine(request.ToString());
 
             try
-            {
-                
+            {                
                 // Create the TCP client
                 Int32 port = Int32.Parse(txtServerPort.Text);
                 TcpClient client = new TcpClient("codingchallenge.identityone.net", port);
 
                 // Open the network stream and send the request
+                NetworkStream stream = client.GetStream();
+                stream.Write(requestByteArray, 0, requestByteArray.Length);
 
-                new Thread(() =>
-                {
-                    Thread.CurrentThread.IsBackground = true;
+                // Receive the response
+                ProtocolResponse response = ProtocolResponse.Receive(stream);
 
-                    NetworkStream stream = client.GetStream();
-                    stream.Write(requestByteArray, 0, requestByteArray.Length);
+                // Update the current payload & response status
+                payload = response.payload;
+                result = response.Status;
 
-                    // Receive the response
-                    ProtocolResponse response = ProtocolResponse.Receive(stream);
-                    payload = response.payload;
-
-                    ReportStatus(response.Status, operation);
-
-                    stream.Close();
-                    client.Close();
-                }).Start();              
+                // Close the stream and TCP client
+                stream.Close();
+                client.Close();         
             }
             catch (ArgumentNullException exception)
             {
@@ -84,67 +116,66 @@ namespace CodingChallengeV2Client
             {
                 Console.WriteLine("SocketException: {0}", exception);
             }
-        }
-        
-        private string GetStatusInfo(string type, string message)
-        {
-            return DateTime.Now + "\t" + type + "\t" + message;
+            
+            return result;
         }
 
-        private void ReportStatus(int status, Operation)
+        private string GetReportStatus(int status, Operation operation)
         {
+            string resultMessage = "";
+
             switch (status)
             {
                 case 0:
-                    if (operation == Operation.Encode)
+                    if (operation == Operation.Encode || operation == Operation.Decode)
                     {
-                        cycleCount++;
-                    }
-                    else if (operation == Operation.Decode)
-                    {
-                        if (cycleCount > 0)
-                        {
-                            cycleCount--;
-                        }
+                        resultMessage = GetStatusMessage("Information", "Request completed successfully");
                     }
                     else
                     {
-                        lstStatus.Items.Add(GetStatusInfo("Error", "Unknown operation"));
-                    }
+                        resultMessage = GetStatusMessage("Error", "Unknown operation");
+                    }                    
                     break;
                 case 1:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Invalid header was received"));
+                    resultMessage = GetStatusMessage("Error", "Invalid header was received");
                     break;
                 case 2:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Unsupported protocol version was received"));
+                    resultMessage = GetStatusMessage("Error", "Unsupported protocol version was received");
                     break;
                 case 3:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Unsupported protocol operation was received"));
+                    resultMessage = GetStatusMessage("Error", "Unsupported protocol operation was received");
                     break;
                 case 4:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Timed out waiting for more data / Incomplete data length received"));
+                    resultMessage = GetStatusMessage("Error", "Timed out waiting for more data / Incomplete data length received");
                     break;
                 case 5:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Maximum request length has been exceeded"));
+                    resultMessage = GetStatusMessage("Error", "Maximum request length has been exceeded");
                     break;
                 case 6:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Invalid checksum was received"));
+                    resultMessage = GetStatusMessage("Error", "Invalid checksum was received");
                     break;
                 case 7:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Encode operation failed"));
+                    resultMessage = GetStatusMessage("Error", "Encode operation failed");
                     break;
                 case 8:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Decode operation failed"));
+                    resultMessage = GetStatusMessage("Error", "Decode operation failed");
                     break;
                 case 9:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Maximum response length after operation exceeds maximum allowed response length"));
+                    resultMessage = GetStatusMessage("Error", "Maximum response length after operation exceeds maximum allowed response length");
                     break;
                 default:
-                    lstStatus.Items.Add(GetStatusInfo("Error", "Unknown Error (Response)"));
+                    resultMessage = GetStatusMessage("Error", "Unknown Error (Response)");
                     break;
             }
 
             lblEncodeCycleCount.Content = cycleCount + " (Cycle Count)";
+
+            return resultMessage;
+        }
+
+        private string GetStatusMessage(string type, string message)
+        {
+            return DateTime.Now + "\t" + type + "\t" + message;
         }
     }
 }

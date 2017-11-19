@@ -8,11 +8,16 @@ namespace CodingChallengeV2Client
 {
     abstract class ProtocolMessage
     {
+        // Get checksum for this message
         public byte GetCheckSum()
         {
-            return ProtocolMessage.GetCheckSum(this.ToUnverifiedBytes());
+            return GetCheckSum(ToUnverifiedBytes());
         }
 
+        // Get message bytes without verified checksum
+        protected abstract List<byte> ToUnverifiedBytes();
+
+        // Get message bytes with verified checksum
         public List<byte> ToVerifiedBytes()
         {
             var byteArray = ToUnverifiedBytes();
@@ -20,10 +25,9 @@ namespace CodingChallengeV2Client
             byteArray.Add(checksum);
 
             return byteArray;
-        }
+        }       
 
-        protected abstract List<byte> ToUnverifiedBytes();
-
+        // Get checksum for the passed bytes
         public static byte GetCheckSum(List<byte> bytes)
         {
             byte cs = 0;
@@ -41,5 +45,11 @@ namespace CodingChallengeV2Client
 
             return cs;
         }
-    }    
+    }
+
+    public enum Operation
+    {
+        Encode,
+        Decode
+    }
 }

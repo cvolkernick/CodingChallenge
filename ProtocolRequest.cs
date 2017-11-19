@@ -33,41 +33,31 @@ namespace CodingChallengeV2Client
                 + "Checksum: " + checksum;                
         }
 
-        // Form the request
+        // Get this request's unverified (no checksum) bytes
         protected override List<byte> ToUnverifiedBytes()
         {
-            var packet = new List<byte>();
+            var bytes = new List<byte>();
 
             // header
             byte[] headerBytes = BitConverter.GetBytes((UInt16)0x1092);
             header = headerBytes[0].ToString() + " " + headerBytes[1].ToString();
-            packet.AddRange(headerBytes);
+            bytes.AddRange(headerBytes);
 
             // version
-            packet.Add(1);
+            bytes.Add(1);
             
             length = 9 + payload.Length;
 
             // length
-            packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
+            bytes.AddRange(BitConverter.GetBytes((UInt32)(length)));
 
             // operation
-            packet.Add((byte)(operation == Operation.Encode ? 1 : 2));
+            bytes.Add((byte)(operation == Operation.Encode ? 1 : 2));
 
             // data
-            packet.AddRange(payload);
+            bytes.AddRange(payload);
 
-            // checksum
-            checksum = GetCheckSum(packet);
-            //packet.Add(checksum);
-
-            return packet;
+            return bytes;
         }
-    }
-
-    public enum Operation
-    {
-        Encode,
-        Decode
-    }
+    }    
 }

@@ -71,19 +71,25 @@ namespace CodingChallengeV2Client
                 + "Checksum: " + checksum;
         }
 
+        // Get this response's unverified (no checksum) bytes
         protected override List<byte> ToUnverifiedBytes()
         {
-            var packet = new List<byte>();
+            var bytes = new List<byte>();
             
-            packet.AddRange(BitConverter.GetBytes((UInt16)0x0978));
-            packet.Add(Convert.ToByte(Status));
+            // header
+            bytes.AddRange(BitConverter.GetBytes((UInt16)0x0978));
 
-            var data = payload;
-            length = 9 + data.Length;
-            packet.AddRange(BitConverter.GetBytes((UInt32)(length)));
-            packet.AddRange(data);
+            // status
+            bytes.Add(Convert.ToByte(Status));
 
-            return packet;
+            // length
+            length = 9 + payload.Length;
+            bytes.AddRange(BitConverter.GetBytes((UInt32)(length)));
+
+            // data
+            bytes.AddRange(payload);
+
+            return bytes;
         }
     }
 }
